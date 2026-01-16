@@ -1,7 +1,21 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"log"
+	"os"
+
+	"github.com/dotenv-org/godotenvvault"
+)
 
 func main() {
-	fmt.Println("Hello, world!")
+	err := godotenvvault.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	hello := os.Getenv("HELLO")
+	output := "Hello " + hello
+
+	fmt.Printf(output)
 }
