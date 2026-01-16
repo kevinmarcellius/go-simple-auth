@@ -50,3 +50,18 @@ func (h *UserHandler) Login(c echo.Context) error {
 
 	return c.JSON(200, res)
 }
+
+func (h *UserHandler) Refresh(c echo.Context) error {
+	ctx := c.Request().Context()
+	var req model.RefreshTokenRequest
+	if err := c.Bind(&req); err != nil {
+		return c.JSON(400, map[string]string{"error": "Invalid request"})
+	}
+
+	res, err := h.userService.Refresh(ctx, req)
+	if err != nil {
+		return c.JSON(401, map[string]string{"error": "Invalid refresh token"})
+	}
+
+	return c.JSON(200, res)
+}

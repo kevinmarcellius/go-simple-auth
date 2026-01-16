@@ -26,3 +26,11 @@ Content-Type: application/json
   "password": "password123"
 }
 ###
+
+POST http://localhost:9500/api/v1/user/refresh
+Content-Type: application/json 
+
+{
+  "refresh_token" : "{{ jwt.refresh_token }}"
+}
+###

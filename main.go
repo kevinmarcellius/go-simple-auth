@@ -55,6 +55,7 @@ func main() {
 	// user
 	v1.POST("/user", userHandler.CreateUser)
 	v1.POST("/user/login", userHandler.Login)
+	v1.POST("/user/refresh", userHandler.Refresh)
 
 	// Start server
 

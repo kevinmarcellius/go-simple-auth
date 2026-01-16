@@ -45,6 +45,14 @@ type LoginResponse struct {
 	RefreshToken string `json:"refresh_token"`
 }
 
+type RefreshTokenRequest struct {
+	RefreshToken string `json:"refresh_token" validate:"required"`
+}
+
+type RefreshTokenResponse struct {
+	AccessToken string `json:"access_token"`
+}
+
 func (ur *UserRequest) ValidateUserRequest() error {
 	// Add custom validation logic here if needed
 	if len(ur.Username) < 3 || len(ur.Username) > 50 {

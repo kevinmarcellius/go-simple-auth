@@ -14,6 +14,7 @@ import (
 type UserService interface {
 	CreateUser(ctx context.Context, req model.UserRequest) (model.UserResponse, error)
 	Login(ctx context.Context, req model.LoginRequest) (model.LoginResponse, error)
+	Refresh(ctx context.Context, req model.RefreshTokenRequest) (model.LoginResponse, error)
 }
 
 type userService struct {
@@ -75,6 +76,23 @@ func (s *userService) Login(ctx context.Context, req model.LoginRequest) (model.
 	return model.LoginResponse{
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
+	}, nil
+}
+
+func (s *userService) Refresh(ctx context.Context, req model.RefreshTokenRequest) (model.LoginResponse, error) {
+	claims, err := utils.ValidateRefreshToken(req.RefreshToken, s.jwtKey)
+	if err != nil {
+		return model.LoginResponse{}, err
+	}
+
+	accessToken, err := utils.GenerateNewAccessToken(claims, s.jwtKey)
+	if err != nil {
+		return model.LoginResponse{}, err
+	}
+
+	return model.LoginResponse{
+		AccessToken: accessToken,
+		RefreshToken: req.RefreshToken,
 	}, nil
 }
 
