@@ -2,7 +2,7 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- Create the users table
-CREATE TABLE users (
+CREATE TABLE "go_user" (
     -- id: UUID primary key, automatically generated on creation
     id UUID PRIMARY KEY,
 
@@ -23,6 +23,8 @@ CREATE TABLE users (
 
     -- updated_at: Timestamp for the last time the user account was updated
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+
+    deleted_at TIMESTAMP WITH TIME ZONE DEFAULT NULL
 );
 
 -- Create an index on the email column for faster lookups during login
@@ -39,6 +41,6 @@ $$ language 'plpgsql';
 
 -- Attach the trigger to the users table
 CREATE TRIGGER update_users_updated_at
-BEFORE UPDATE ON users
+BEFORE UPDATE ON "go_user"
 FOR EACH ROW
 EXECUTE FUNCTION update_updated_at_column();
