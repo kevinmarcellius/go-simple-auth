@@ -31,6 +31,6 @@ POST http://localhost:9500/api/v1/user/refresh
 Content-Type: application/json 
 
 {
-  "refresh_token" : "{{ jwt.refresh_token }}"
+  "refresh_token" : "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMmYyOTJkYzAtZjMxYi00ZjAyLWE3ZTMtMjc3MWIxOTNhYzlkIiwiZXhwIjoxNzY4NjczOTcyfQ.RdnBQiH5j7ERtuPbpcFP97pj8qsfPmyAoK_FCzbkUhQ"
 }
 ###

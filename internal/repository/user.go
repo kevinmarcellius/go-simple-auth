@@ -1,13 +1,14 @@
 package repository
 
 import (
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 	model "github.com/kevinmarcellius/go-simple-auth/internal/model"
 )
 
 type UserRepository interface {
 	// finduserbyid, id is uuid
-	FindUserByID(id string) (model.User, error)
+	FindUserByID(id uuid.UUID) (model.User, error)
 	CreateUser(user model.User) error
 	GetUserByEmail(email string) (model.User, error)
 }
@@ -21,7 +22,7 @@ func NewUserRepository(db *gorm.DB) UserRepository {
 }
 
 // FindUserByID implements UserRepository
-func (r *userRepository) FindUserByID(id string) (model.User, error) {
+func (r *userRepository) FindUserByID(id uuid.UUID) (model.User, error) {
 	var user model.User
 	result := r.db.First(&user, "id = ?", id)
 	return user, result.Error

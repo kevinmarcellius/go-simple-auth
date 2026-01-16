@@ -14,7 +14,7 @@ import (
 type UserService interface {
 	CreateUser(ctx context.Context, req model.UserRequest) (model.UserResponse, error)
 	Login(ctx context.Context, req model.LoginRequest) (model.LoginResponse, error)
-	Refresh(ctx context.Context, req model.RefreshTokenRequest) (model.LoginResponse, error)
+	Refresh(ctx context.Context, req model.RefreshTokenRequest) (model.RefreshTokenResponse, error)
 }
 
 type userService struct {
@@ -79,20 +79,29 @@ func (s *userService) Login(ctx context.Context, req model.LoginRequest) (model.
 	}, nil
 }
 
-func (s *userService) Refresh(ctx context.Context, req model.RefreshTokenRequest) (model.LoginResponse, error) {
+func (s *userService) Refresh(ctx context.Context, req model.RefreshTokenRequest) (model.RefreshTokenResponse, error) {
 	claims, err := utils.ValidateRefreshToken(req.RefreshToken, s.jwtKey)
 	if err != nil {
-		return model.LoginResponse{}, err
+		return model.RefreshTokenResponse{}, err
 	}
 
-	accessToken, err := utils.GenerateNewAccessToken(claims, s.jwtKey)
+	userID, err := uuid.Parse(claims.UserID)
 	if err != nil {
-		return model.LoginResponse{}, err
+		return model.RefreshTokenResponse{}, err
 	}
 
-	return model.LoginResponse{
+	user, err := s.userRepo.FindUserByID(userID)
+	if err != nil {
+		return model.RefreshTokenResponse{}, err
+	}
+
+	accessToken, err := utils.GenerateNewAccessToken(user, s.jwtKey)
+	if err != nil {
+		return model.RefreshTokenResponse{}, err
+	}
+
+	return model.RefreshTokenResponse{
 		AccessToken: accessToken,
-		RefreshToken: req.RefreshToken,
 	}, nil
 }
 
