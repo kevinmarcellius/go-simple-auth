@@ -35,6 +35,16 @@ type UserResponse struct {
 	Message string `json:"message"`
 }
 
+type LoginRequest struct {
+	Email    string `json:"email" validate:"required,email,max=255"`
+	Password string `json:"password" validate:"required,min=6,max=100"`
+}
+
+type LoginResponse struct {
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+}
+
 func (ur *UserRequest) ValidateUserRequest() error {
 	// Add custom validation logic here if needed
 	if len(ur.Username) < 3 || len(ur.Username) > 50 {

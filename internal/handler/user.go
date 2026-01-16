@@ -35,3 +35,18 @@ func (h *UserHandler) CreateUser(c echo.Context) error {
 	return c.JSON(201, res)
 
 }
+
+func (h *UserHandler) Login(c echo.Context) error {
+	ctx := c.Request().Context()
+	var req model.LoginRequest
+	if err := c.Bind(&req); err != nil {
+		return c.JSON(400, map[string]string{"error": "Invalid request"})
+	}
+
+	res, err := h.userService.Login(ctx, req)
+	if err != nil {
+		return c.JSON(401, map[string]string{"error": "Invalid credentials"})
+	}
+
+	return c.JSON(200, res)
+}

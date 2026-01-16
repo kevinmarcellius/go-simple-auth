@@ -40,7 +40,7 @@ func main() {
 	healthHandler := handler.NewHealthHandler(db)
 
 	userRepository := repository.NewUserRepository(db)
-	userService := service.NewUserService(userRepository)
+	userService := service.NewUserService(userRepository, cfg.JWTkey)
 	userHandler := handler.NewUserHandler(userService)
 
 	e := echo.New()
@@ -54,6 +54,7 @@ func main() {
 
 	// user
 	v1.POST("/user", userHandler.CreateUser)
+	v1.POST("/user/login", userHandler.Login)
 
 	// Start server
 
