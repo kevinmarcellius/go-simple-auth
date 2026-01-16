@@ -6,9 +6,12 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	
-	"github.com/kevinmarcellius/go-simple-auth/config"
 
+	"github.com/kevinmarcellius/go-simple-auth/config"
+	handler "github.com/kevinmarcellius/go-simple-auth/internal/handler"
+
+	repository "github.com/kevinmarcellius/go-simple-auth/internal/repository"
+	service "github.com/kevinmarcellius/go-simple-auth/internal/service"
 )
 
 func main() {
@@ -18,9 +21,8 @@ func main() {
 	}
 
 	hello := cfg.Postgres.Host
-	
-    output := "Hello " + hello
 
+	output := "Hello " + hello
 
 	fmt.Printf(output)
 
@@ -33,14 +35,29 @@ func main() {
 	if err != nil {
 		log.Fatalf("Database health check failed: %v", err)
 	}
-	fmt.Println("Database connection is healthy.")
+	log.Println("Database connection is healthy.")
+
+	healthHandler := handler.NewHealthHandler(db)
+
+	userRepository := repository.NewUserRepository(db)
+	userService := service.NewUserService(userRepository)
+	userHandler := handler.NewUserHandler(userService)
 
 	e := echo.New()
 	e.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, output)
 	})
 
-	port:= fmt.Sprintf(":%d", cfg.Port)
+	v1 := e.Group("/api/v1")
+	v1.GET("/health/ready", healthHandler.ReadinessCheck)
+	v1.GET("/health/live", healthHandler.LivenessCheck)
+
+	// user
+	v1.POST("/user", userHandler.CreateUser)
+
+	// Start server
+
+	port := fmt.Sprintf(":%d", cfg.Port)
 	fmt.Printf("Starting server on port %s\n", port)
 	e.Logger.Fatal(e.Start(port))
 }
