@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 
 	"github.com/kevinmarcellius/go-simple-auth/config"
 	handler "github.com/kevinmarcellius/go-simple-auth/internal/handler"
@@ -24,7 +25,7 @@ func main() {
 
 	output := "Hello " + hello
 
-	fmt.Printf(output)
+	log.Println(output)
 
 	db, err := config.ConnectPostgres(cfg.Postgres)
 	if err != nil {
@@ -44,6 +45,7 @@ func main() {
 	userHandler := handler.NewUserHandler(userService)
 
 	e := echo.New()
+	e.Use(middleware.Logger()) // Add this line to enable the logger middleware
 	e.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, output)
 	})
@@ -60,6 +62,6 @@ func main() {
 	// Start server
 
 	port := fmt.Sprintf(":%d", cfg.Port)
-	fmt.Printf("Starting server on port %s\n", port)
+	log.Printf("Starting server on port %s\n", port)
 	e.Logger.Fatal(e.Start(port))
 }

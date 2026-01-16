@@ -83,17 +83,6 @@ func ValidateRefreshToken(tokenString string, jwtKey string) (*RefreshClaims, er
 }
 
 func GenerateNewAccessToken(user model.User, jwtKey string) (string, error) {
-	expirationTime := time.Now().Add(15 * time.Minute)
-	claims := &Claims{
-		UserID:   user.ID.String(),
-		Username: user.Username,
-		Email:    user.Email,
-		IsAdmin:  user.IsAdmin,
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(expirationTime),
-		},
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte(jwtKey))
+	return generateAccessToken(user, jwtKey)
 }
+
