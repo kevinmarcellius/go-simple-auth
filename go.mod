@@ -8,6 +8,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/labstack/echo-jwt/v4 v4.4.0
 	github.com/labstack/echo/v4 v4.15.0
+	go.uber.org/mock v0.6.0
 	golang.org/x/crypto v0.46.0
 	gorm.io/driver/postgres v1.6.0
 	gorm.io/gorm v1.31.1
