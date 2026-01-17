@@ -58,10 +58,10 @@ jobs:
             cd /home/ubuntu/app
             
             # Pull the new image
-            docker-compose pull
+            docker compose pull
             
             # Start the new container, recreating it if necessary
-            docker-compose up -d
+            docker compose up -d
             
             # Clean up old, unused images
             docker image prune -a -f
