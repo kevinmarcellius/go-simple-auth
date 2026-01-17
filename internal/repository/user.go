@@ -11,6 +11,7 @@ type UserRepository interface {
 	FindUserByID(id uuid.UUID) (model.User, error)
 	CreateUser(user model.User) error
 	GetUserByEmail(email string) (model.User, error)
+	UpdateUserById(id uuid.UUID, updatedUser model.User) error
 }
 
 type userRepository struct {
@@ -37,4 +38,9 @@ func (r *userRepository) GetUserByEmail(email string) (model.User, error) {
 	var user model.User
 	result := r.db.First(&user, "email = ?", email)
 	return user, result.Error
+}
+
+func (r *userRepository) UpdateUserById(id uuid.UUID, updatedUser model.User) error {
+	result := r.db.Model(&model.User{}).Where("id = ?", id).Updates(updatedUser)
+	return result.Error
 }

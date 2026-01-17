@@ -23,7 +23,7 @@ Content-Type: application/json
 
 {
   "email": "hello@world.id",
-  "password": "password123"
+  "password": "newpassword4456"
 }
 ###
 
@@ -34,3 +34,11 @@ Content-Type: application/json
   "refresh_token" : "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMmYyOTJkYzAtZjMxYi00ZjAyLWE3ZTMtMjc3MWIxOTNhYzlkIiwiZXhwIjoxNzY4NjczOTcyfQ.RdnBQiH5j7ERtuPbpcFP97pj8qsfPmyAoK_FCzbkUhQ"
 }
 ###
+PUT http://localhost:9500/api/v1/user/password
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMmYyOTJkYzAtZjMxYi00ZjAyLWE3ZTMtMjc3MWIxOTNhYzlkIiwidXNlcm5hbWUiOiJoZWxsb3dvcmxkIiwiZW1haWwiOiJoZWxsb0B3b3JsZC5pZCIsImlzQWRtaW4iOmZhbHNlLCJleHAiOjE3Njg2Mjc5NTh9.W2PYyJiZVdLks7dHfPcv45BSOGqF86Sbz77SD9ZqQ8s
+Content-Type: application/json 
+
+{
+  "old_password": "newpassword456",
+  "new_password": "newpassword4456"
+}

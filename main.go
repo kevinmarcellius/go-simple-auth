@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4/middleware"
 
 	"github.com/kevinmarcellius/go-simple-auth/config"
@@ -58,6 +59,12 @@ func main() {
 	v1.POST("/user", userHandler.CreateUser)
 	v1.POST("/user/login", userHandler.Login)
 	v1.POST("/user/refresh", userHandler.Refresh)
+
+	jwtMiddleware := echojwt.WithConfig(echojwt.Config{
+		SigningKey: []byte(cfg.JWTkey),
+	})
+
+	v1.PUT("/user/password", userHandler.UpdatePassword, jwtMiddleware)
 
 	// Start server
 

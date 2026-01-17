@@ -53,6 +53,11 @@ type RefreshTokenResponse struct {
 	AccessToken string `json:"access_token"`
 }
 
+type UpdatePasswordRequest struct {
+	OldPassword string `json:"old_password" validate:"required,min=6,max=100"`
+	NewPassword string `json:"new_password" validate:"required,min=6,max=100"`
+}
+
 func (ur *UserRequest) ValidateUserRequest() error {
 	// Add custom validation logic here if needed
 	if len(ur.Username) < 3 || len(ur.Username) > 50 {
@@ -64,6 +69,17 @@ func (ur *UserRequest) ValidateUserRequest() error {
 	// check email format
 	if !strings.Contains(ur.Email, "@") {
 		return fmt.Errorf("invalid email format")
+	}
+	return nil
+}
+
+func (ur *UpdatePasswordRequest) ValidateUpdatePasswordRequest() error {
+	// Add custom validation logic here if needed
+	if len(ur.OldPassword) < 6 || len(ur.OldPassword) > 100 {
+		return fmt.Errorf("old password must be between 6 and 100 characters")
+	}
+	if len(ur.NewPassword) < 6 || len(ur.NewPassword) > 100 {
+		return fmt.Errorf("new password must be between 6 and 100 characters")
 	}
 	return nil
 }

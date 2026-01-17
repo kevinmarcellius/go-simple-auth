@@ -1,7 +1,13 @@
 package utils
 
 import (
+	"errors"
+
 	"golang.org/x/crypto/bcrypt"
+)
+
+var (
+	ErrInvalidPassword = errors.New("INVALID_PASSWORD")
 )
 
 func HashPassword(password string) (string, error) {

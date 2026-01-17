@@ -10,11 +10,11 @@ import (
 	"github.com/kevinmarcellius/go-simple-auth/internal/utils"
 )
 
-
 type UserService interface {
 	CreateUser(ctx context.Context, req model.UserRequest) (model.UserResponse, error)
 	Login(ctx context.Context, req model.LoginRequest) (model.LoginResponse, error)
 	Refresh(ctx context.Context, req model.RefreshTokenRequest) (model.RefreshTokenResponse, error)
+	UpdatePassword(ctx context.Context, userID string, req model.UpdatePasswordRequest) error
 }
 
 type userService struct {
@@ -37,15 +37,14 @@ func (s *userService) CreateUser(ctx context.Context, req model.UserRequest) (mo
 		}, err
 	}
 	req.Password = hashedPassword
-	
 
 	newUser := model.User{
 		ID:           uuid.New(),
 		Username:     req.Username,
 		Email:        req.Email,
 		PasswordHash: hashedPassword,
-		}
-	
+	}
+
 	err = s.userRepo.CreateUser(newUser)
 	if err != nil {
 		return model.UserResponse{
@@ -63,10 +62,14 @@ func (s *userService) Login(ctx context.Context, req model.LoginRequest) (model.
 	if err != nil {
 		return model.LoginResponse{}, err
 	}
+	log.Println("User found:", user.Email)
 
 	if !utils.CheckPasswordHash(req.Password, user.PasswordHash) {
-		return model.LoginResponse{}, err
+		log.Println("Invalid password for user:", user.Email)
+		return model.LoginResponse{}, utils.ErrInvalidPassword
 	}
+	
+	log.Println("Password verified for user:", user.Email)
 
 	accessToken, refreshToken, err := utils.GenerateJWT(user, s.jwtKey)
 	if err != nil {
@@ -105,3 +108,32 @@ func (s *userService) Refresh(ctx context.Context, req model.RefreshTokenRequest
 	}, nil
 }
 
+func (s *userService) UpdatePassword(ctx context.Context, userID string, req model.UpdatePasswordRequest) error {
+	// Implement password update logic here
+	// get user by email
+	uuid, err := uuid.Parse(userID)
+	if err != nil {
+		return err
+	}
+	user, err := s.userRepo.FindUserByID(uuid)
+	if err != nil {
+		return err
+	}
+
+	// check old password
+	if !utils.CheckPasswordHash(req.OldPassword, user.PasswordHash) {
+		return utils.ErrInvalidPassword
+	}
+	// hash new password
+	hashedPassword, err := utils.HashPassword(req.NewPassword)
+	if err != nil {
+		return err
+	}
+	// update user password
+	user.PasswordHash = hashedPassword
+	err = s.userRepo.UpdateUserById(user.ID, user)
+	if err != nil {
+		return err
+	}
+	return nil
+}
