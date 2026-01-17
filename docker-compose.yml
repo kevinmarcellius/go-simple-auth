@@ -4,13 +4,17 @@ services:
   app:
     image: ${DOCKER_USERNAME}/go-simple-auth:${TAG}
     restart: always
-    env_file:
-      - ./.env
+    volumes:
+      - ./.env:/app/.env
     ports:
       - "8080:8080"
     networks:
-      - app-network
+      - default
+      - app-network 
 
 networks:
   app-network:
+    external: true
+    name: my-app-network
+  default:
     driver: bridge

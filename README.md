@@ -1,18 +1,12 @@
-# Go Simple Authentication Service
+# go-simple-auth
 
-A backend API written in Go that provides fundamental user authentication and management features, including JWT-based authentication, user registration, and secure password management. The project is containerized with Docker and includes a CI/CD pipeline for automated testing, analysis, and deployment.
+A backend API written in Go that provides fundamental user authentication and management features, including JWT-based authentication, user registration, and secure password management. The project is containerized with Docker and includes a full CI/CD pipeline for automated testing, analysis, versioning, and deployment.
 
 ## Features
 
 *   **User Management**: Create, login, and update user passwords.
-*   **JWT Authentication**: Secure endpoints using JSON Web Tokens, with both short-lived access tokens and refresh tokens.
-*   **Secure Password Handling**: Passwords are hashed using `bcrypt`.
-*   **Layered Architecture**: Clear separation of concerns between handlers, services, and repositories.
-*   **Containerized**: Includes a multi-stage `Dockerfile` for building small, secure production images.
-*   **CI/CD Integration**:
-    *   Automated unit testing on feature branches (`feat/*`).
-    *   SonarCloud integration for static code analysis and coverage reporting.
-    *   Automated semantic versioning, Git tagging, and Docker image publishing on the `master` branch.
+*   **JWT Authentication**: Secure endpoints using JSON Web Tokens, with short-lived access tokens and minimalist refresh tokens for enhanced security.
+*   **Full CI/CD Pipeline**: Automated workflows for testing, code analysis, semantic versioning, Docker image publishing, and manual deployment to production environments.
 
 ## Technologies Used
 
@@ -22,6 +16,7 @@ A backend API written in Go that provides fundamental user authentication and ma
 *   **Authentication**: [JWT](https://jwt.io/)
 *   **Configuration**: `.env` files using `godotenvvault`.
 *   **Testing**: Go's native testing library, `gomock` for repository mocking, and `testify/assert`.
+*   **CI/CD**: GitHub Actions, Docker Hub, SonarCloud.
 
 ---
 
@@ -30,11 +25,11 @@ A backend API written in Go that provides fundamental user authentication and ma
 ### Prerequisites
 
 *   Go (version 1.22 or higher)
-*   Docker
+*   Docker & Docker Compose
 *   A running PostgreSQL instance
 *   `make` (for using the Makefile commands)
 
-### Installation & Setup
+### Local Development
 
 1.  **Clone the repository:**
     ```bash
@@ -46,9 +41,9 @@ A backend API written in Go that provides fundamental user authentication and ma
     Use the schema from `migration/db_schema.sql` to create the `go_user` table in your PostgreSQL database.
 
 3.  **Create a `.env` file:**
-    Create a `.env` file in the project root. You can copy the example below.
+    Create a `.env` file in the project root. This will be used for both local development and Docker Compose.
     ```env
-    # .env
+    # .env - For Application
     POSTGRES_HOST=localhost
     POSTGRES_PORT=5432
     POSTGRES_USER=your_db_user
@@ -56,6 +51,10 @@ A backend API written in Go that provides fundamental user authentication and ma
     POSTGRES_DB=your_db_name
     JWT_SECRET=a-very-strong-and-secret-key
     PORT=8080
+
+    # .env - For Docker Compose (used in deployment)
+    DOCKER_USERNAME=your_dockerhub_username
+    TAG=latest
     ```
 
 4.  **Install Dependencies:**
@@ -67,7 +66,6 @@ A backend API written in Go that provides fundamental user authentication and ma
     ```bash
     go run main.go
     ```
-    The server will start on the port specified in your `.env` file (e.g., `8080`).
 
 ---
 
@@ -79,74 +77,91 @@ All endpoints are prefixed with `/api/v1`.
 |--------|--------------------|------------|---------------------------------------------------|
 | `POST` | `/user`            | None       | Registers a new user.                             |
 | `POST` | `/user/login`      | None       | Logs in a user and returns JWT access/refresh tokens. |
-| `POST` | `/user/refresh`    | None       | Refreshes an expired access token using a valid refresh token. |
+| `POST` | `/user/refresh`    | None       | Refreshes an access token using a valid refresh token. |
 | `PUT`  | `/user/password`   | JWT        | Updates the authenticated user's password.        |
 | `GET`  | `/health/live`     | None       | Liveness probe for health checks.                 |
 | `GET`  | `/health/ready`    | None       | Readiness probe for health checks.                |
-
 
 ---
 
 ## Testing and Code Quality
 
-This project uses `make` to simplify testing and code generation.
+This project uses `make` to simplify common development tasks.
 
 *   **Run all unit tests:**
     ```bash
     make test
     ```
-    This command runs all `_test.go` files and generates a `coverage.out` file.
+    This command runs all `_test.go` files and generates a `coverage.out` file required for SonarCloud analysis.
 
 *   **View test coverage:**
-    After running `make test`, you can view an interactive HTML report of your code coverage.
+    After running `make test`, view an interactive HTML report of your code coverage.
     ```bash
     make coverage
     ```
     This will open the report in your default browser.
 
 *   **Generate mocks:**
-    If you modify the repository interfaces, you can regenerate the mocks.
+    If you modify repository interfaces, regenerate the mocks:
     ```bash
     make mockgen
     ```
 
 ---
 
-## Running with Docker
+## Deployment
+
+The project is designed to be deployed as a Docker container and includes a complete CI/CD pipeline to automate the process.
+
+### Running with Docker
+
+The included `docker-compose.yml` is the standard way to run the application in a production-like environment.
 
 1.  **Build the Docker image:**
     ```bash
-    docker build -t go-simple-auth .
+    docker build -t your-dockerhub-username/go-simple-auth:latest .
     ```
 
-2.  **Run the container:**
-    Ensure your `.env` file is present in the current directory.
+2.  **Run with Docker Compose:**
+    Ensure your `.env` file is configured correctly (see Getting Started). Docker Compose will use the `DOCKER_USERNAME` and `TAG` variables to pull the correct image, and mount the same `.env` file into the container for the application to use.
     ```bash
-    docker run -p 8080:8080 -v "$(pwd)/.env:/app/.env" go-simple-auth
+    docker-compose up -d
     ```
 
----
+### CI/CD Pipelines (GitHub Actions)
 
-## CI/CD Pipeline
+This project utilizes three distinct GitHub Actions workflows located in `.github/workflows/`.
 
-This project utilizes GitHub Actions for its CI/CD pipelines.
-
-### Feature Branch Workflow (`ci.yml`)
+#### 1. Feature Branch CI (`ci.yml`)
 
 *   **Trigger**: On push to any branch named `feat/*`.
+*   **Purpose**: To ensure code quality on new features.
 *   **Jobs**:
-    1.  **`test`**: Runs all unit tests.
-    2.  **`sonarcloud`**: Runs SonarCloud analysis for code quality and coverage after tests pass.
-*   **Purpose**: To ensure code quality and prevent regressions on new feature branches.
+    1.  **`test`**: Runs all unit tests and uploads the coverage report.
+    2.  **`sonarcloud`**: Downloads the coverage report and runs SonarCloud analysis.
 
-### Release Workflow (`release.yml`)
+#### 2. Master Branch Release (`release.yml`)
 
 *   **Trigger**: On push to the `master` branch.
+*   **Purpose**: To automatically test, version, and publish a new release.
 *   **Jobs**:
-    1.  **`test_and_analyze`**: Runs all tests and a SonarCloud analysis.
-    2.  **`build_and_push`**:
-        *   Only runs if the previous job succeeds.
-        *   **Generates a semantic version tag** (e.g., `v1.2.3`) based on commit history and pushes it to the repository.
-        *   Builds a Docker image.
-        *   Pushes the image to Docker Hub, tagged with both the new version and `latest`.
-*   **Purpose**: To automate the release process, ensuring that only tested and analyzed code is versioned and published as a Docker image.
+    1.  **`test_and_analyze`**: Runs tests and SonarCloud analysis.
+    2.  **`build_and_push`**: If tests pass, this job:
+        *   **Generates a semantic version tag** (e.g., `v1.2.3`) based on commit history and pushes the tag to the repository.
+        *   Builds the Docker image.
+        *   Pushes the image to Docker Hub with two tags: the new version (`v1.2.3`) and `latest`.
+
+#### 3. Manual EC2 Deployment (`deploy.yml`)
+
+*   **Trigger**: Manually, from the GitHub Actions UI.
+*   **Purpose**: To deploy a specific version of the application to a live environment (e.g., an AWS EC2 VM).
+*   **Inputs**:
+    *   `version`: The Git tag to deploy (e.g., `v1.2.3`).
+    *   `ec2_host`: The public DNS or IP of the target VM.
+*   **Process**:
+    1.  Verifies the requested Git tag exists.
+    2.  Connects to the target VM via SSH.
+    3.  Copies over the `docker-compose.yml` file.
+    4.  Creates the production `.env` file on the VM from a GitHub secret (`PROD_ENV_FILE`).
+    5.  Runs `docker-compose pull` and `docker-compose up -d` to pull the specified image version and start the container.
+    6.  Prunes old Docker images to save disk space.

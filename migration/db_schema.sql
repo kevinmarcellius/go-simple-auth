@@ -22,13 +22,13 @@ CREATE TABLE "go_user" (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
 
     -- updated_at: Timestamp for the last time the user account was updated
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
 
     deleted_at TIMESTAMP WITH TIME ZONE DEFAULT NULL
 );
 
 -- Create an index on the email column for faster lookups during login
-CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX idx_users_email ON "go_user"(email);
 
 -- Create a trigger function to automatically update the updated_at timestamp on any row modification
 CREATE OR REPLACE FUNCTION update_updated_at_column()
