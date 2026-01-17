@@ -1,0 +1,16 @@
+# Git
+.git
+.gitignore
+
+# Docker
+Dockerfile
+.dockerignore
+
+# Environment files
+.env
+*.env
+
+# Local development files
+*.md
+LICENSE
+api-doc.http
