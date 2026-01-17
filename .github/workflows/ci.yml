@@ -20,7 +20,10 @@ jobs:
 
     - name: Run tests
       run: make test
-      
+
+    - name: Generate coverage report
+      run: make coverage
+
   sonarcloud:
     name: SonarQube
     runs-on: ubuntu-latest
