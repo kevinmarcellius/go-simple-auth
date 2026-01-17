@@ -25,6 +25,7 @@ jobs:
       run: make coverage
 
   sonarcloud:
+    needs: test
     name: SonarQube
     runs-on: ubuntu-latest
     steps:
