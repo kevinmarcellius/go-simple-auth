@@ -20,18 +20,7 @@ jobs:
 
     - name: Run tests
       run: make test
-
-      uses: SonarSource/sonarcloud-github-action@master
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to decorate PRs
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      with:
-        args: >
-          -Dsonar.organization=kevin-default
-          -Dsonar.projectKey=kevin-default_go-simple-auth
-          -Dsonar.go.coverage.reportPaths=coverage.out
-          -Dsonar.coverage.exclusions=**/*_test.go,**/*_mock.go
-          -Dsonar.sources=./internal
+      
   sonarcloud:
     name: SonarQube
     runs-on: ubuntu-latest
