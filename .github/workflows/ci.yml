@@ -21,13 +21,6 @@ jobs:
     - name: Run tests
       run: make test
 
-    - name: Set up JDK 17
-      uses: actions/setup-java@v4
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-
-    - name: SonarCloud Scan
       uses: SonarSource/sonarcloud-github-action@master
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to decorate PRs
@@ -39,3 +32,14 @@ jobs:
           -Dsonar.go.coverage.reportPaths=coverage.out
           -Dsonar.coverage.exclusions=**/*_test.go,**/*_mock.go
           -Dsonar.sources=./internal
+  sonarcloud:
+    name: SonarQube
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0  
+      - name: SonarQubeScan
+        uses: SonarSource/sonarqube-scan-action@v7
+        env: 
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
