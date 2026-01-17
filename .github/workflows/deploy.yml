@@ -1,0 +1,68 @@
+name: Manual Deploy to EC2
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'The Git tag to deploy (e.g., v0.1.0)'
+        required: true
+      ec2_host:
+        description: 'Public DNS or IP of the EC2 instance'
+        required: true
+
+jobs:
+  deploy:
+    name: Deploy to EC2
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check if Git tag exists
+        run: |
+          if git ls-remote --tags origin | grep -q "refs/tags/${{ github.event.inputs.version }}"; then
+            echo "Tag ${{ github.event.inputs.version }} found."
+          else
+            echo "Error: Tag ${{ github.event.inputs.version }} not found in remote repository."
+            exit 1
+          fi
+
+      - name: Create production .env file
+        run: echo "${{ secrets.PROD_ENV_FILE }}" > .env
+
+      - name: Set up SSH key
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
+
+      - name: Create deployment directory on EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no ubuntu@${{ github.event.inputs.ec2_host }} "mkdir -p /home/ubuntu/app"
+
+      - name: Copy files to EC2
+        run: |
+          scp -o StrictHostKeyChecking=no docker-compose.yml .env ubuntu@${{ github.event.inputs.ec2_host }}:/home/ubuntu/app/
+
+      - name: Deploy on EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no ubuntu@${{ github.event.inputs.ec2_host }} '
+            set -e # Exit immediately if a command exits with a non-zero status.
+
+            # Log in to Docker Hub
+            echo ${{ secrets.DOCKER_TOKEN }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+            
+            # Set the image tag
+            export TAG=${{ github.event.inputs.version }}
+            
+            # Change to the app directory
+            cd /home/ubuntu/app
+            
+            # Pull the new image
+            docker-compose pull
+            
+            # Start the new container, recreating it if necessary
+            docker-compose up -d
+            
+            # Clean up old, unused images
+            docker image prune -a -f
+          '

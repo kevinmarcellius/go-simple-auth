@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  app:
+    image: ${{ secrets.DOCKER_USERNAME }}/go-simple-auth:${TAG:-latest}
+    restart: always
+    env_file:
+      - ./.env
+    ports:
+      - "8080:8080"
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
