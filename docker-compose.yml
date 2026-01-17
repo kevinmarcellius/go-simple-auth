@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   app:
-    image: ${{ secrets.DOCKER_USERNAME }}/go-simple-auth:${TAG:-latest}
+    image: ${DOCKER_USERNAME}/go-simple-auth:${TAG}
     restart: always
     env_file:
       - ./.env

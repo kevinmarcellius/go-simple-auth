@@ -51,13 +51,14 @@ jobs:
             # Log in to Docker Hub
             echo ${{ secrets.DOCKER_TOKEN }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
             
-            # Set the image tag
-            export TAG=${{ github.event.inputs.version }}
-            
             # Change to the app directory
             cd /home/ubuntu/app
             
-            # Pull the new image
+            # Add Docker Compose variables to the .env file
+            echo "DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}" >> .env
+            echo "TAG=${{ github.event.inputs.version }}" >> .env
+            
+            # Pull the new image using the variables from the .env file
             docker compose pull
             
             # Start the new container, recreating it if necessary
