@@ -14,7 +14,55 @@ import (
 )
 
 func TestUserService_Login(t *testing.T) {
-	// ... (existing TestUserService_Login function)
+	hashedPassword, _ := utils.HashPassword("password123")
+	testCases := []struct {
+		name        string
+		req         model.LoginRequest
+		mockRepo    func(mock *mocks.MockUserRepository)
+		expectedMsg string
+		expectedErr error
+	}{
+		{
+			name: "Success",
+			req: model.LoginRequest{
+				Email: "test@mail.id",
+				Password: "password123",
+			},
+			mockRepo: func(mock *mocks.MockUserRepository) {
+				mock.EXPECT().GetUserByEmail("test@mail.id").Return(model.User{
+					ID:           uuid.New(),
+					Email:        "test@mail.id",
+					PasswordHash: hashedPassword,
+					IsAdmin: false,
+					Username: "testuser",
+				}, nil)
+			},
+			expectedMsg: "Login successful",
+			expectedErr: nil,
+	},}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			
+			mockUserRepo := mocks.NewMockUserRepository(ctrl)
+			tc.mockRepo(mockUserRepo)
+			
+			userService := NewUserService(mockUserRepo, "test-secret-key")
+			_, err := userService.Login(context.Background(), tc.req)
+			
+			if tc.expectedErr != nil {
+				assert.Error(t, err)
+				assert.Equal(t, tc.expectedErr, err)
+				
+			} else {
+				assert.NoError(t, err)
+			
+			}
+		})
+	}
+		
 }
 
 func TestUserService_CreateUser(t *testing.T) {
