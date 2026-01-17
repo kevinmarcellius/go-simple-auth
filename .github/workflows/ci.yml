@@ -37,3 +37,5 @@ jobs:
           -Dsonar.organization=kevin-default
           -Dsonar.projectKey=kevin-default_go-simple-auth
           -Dsonar.go.coverage.reportPaths=coverage.out
+          -Dsonar.coverage.exclusions=**/*_test.go,**/*_mock.go
+          -Dsonar.sources=./internal
